@@ -89,6 +89,7 @@ changelog:
 
 brews:
   - name: calendarctl
+    directory: Formula
     repository:
       owner: thebuildlabs
       name: homebrew-tap
