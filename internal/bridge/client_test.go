@@ -165,6 +165,10 @@ func TestResolveRejectsUnsafeOverride(t *testing.T) {
 	if err := os.WriteFile(path, []byte("#!/bin/sh\n"), 0o777); err != nil {
 		t.Fatal(err)
 	}
+	// Set the mode explicitly: umask can strip group/world bits on create.
+	if err := os.Chmod(path, 0o777); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := Resolve(path); err == nil {
 		t.Fatal("expected an error for a world-writable bridge override")
 	}
@@ -177,6 +181,10 @@ func TestResolveRejectsSymlinkToUnsafeTarget(t *testing.T) {
 	dir := t.TempDir()
 	target := filepath.Join(dir, "target")
 	if err := os.WriteFile(target, []byte("#!/bin/sh\n"), 0o777); err != nil {
+		t.Fatal(err)
+	}
+	// Set the mode explicitly: umask can strip group/world bits on create.
+	if err := os.Chmod(target, 0o777); err != nil {
 		t.Fatal(err)
 	}
 	link := filepath.Join(dir, "bridge")
