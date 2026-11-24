@@ -15,7 +15,8 @@ import (
 func testService(t *testing.T) (*Service, *mock.Provider) {
 	t.Helper()
 	cfg := config.Default()
-	cfg.Timezone = "Asia/Kolkata"
+	// The mock provider seeds relative to time.Local. Keep the service in the
+	// same zone so tests don't depend on the machine's timezone vs. UTC on CI.
 	p := mock.New()
 	svc, err := NewService(p, cfg, logging.Noop())
 	if err != nil {
@@ -89,15 +90,22 @@ func TestBuildQuery(t *testing.T) {
 	}
 }
 
+// todayStart returns midnight in the service's timezone for the current day.
+// Anchoring on Now() keeps tests independent of the date and of CI's timezone.
+func todayStart(svc *Service) time.Time {
+	y, m, d := svc.Now().Date()
+	return time.Date(y, m, d, 0, 0, 0, 0, svc.Location())
+}
+
 func TestDuplicateDetection(t *testing.T) {
 	svc, _ := testService(t)
 	ctx := context.Background()
-	loc := svc.Location()
+	day := todayStart(svc)
 	in := calendar.EventInput{
 		CalendarID: "cal-work-0001",
 		Title:      "Team Standup",
-		Start:      time.Date(2026, 11, 25, 9, 0, 0, 0, loc),
-		End:        time.Date(2026, 11, 25, 10, 0, 0, 0, loc),
+		Start:      day.Add(9 * time.Hour),
+		End:        day.Add(10 * time.Hour),
 	}
 	dup, err := svc.FindDuplicate(ctx, in)
 	if err != nil || dup == nil {
@@ -120,8 +128,7 @@ func TestDuplicateDetection(t *testing.T) {
 func TestAvailabilityMergesOverlaps(t *testing.T) {
 	svc, p := testService(t)
 	ctx := context.Background()
-	loc := svc.Location()
-	day := time.Date(2026, 11, 25, 0, 0, 0, 0, loc)
+	day := todayStart(svc)
 
 	// Add an overlapping event to the seeded 09:00-10:00 standup.
 	_, err := p.CreateEvent(ctx, calendar.EventInput{
