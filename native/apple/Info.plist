@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleName</key>
+	<string>calendarctl EventKit Bridge</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.thebuildlabs.calendarctl.bridge</string>
+	<key>CFBundleExecutable</key>
+	<string>EventKitBridge</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.1.0</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>11.0</string>
+	<key>NSHighResolutionCapable</key>
+	<true/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>calendarctl uses calendar access to list, create and update your events.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>calendarctl needs full calendar access to read and manage your events.</string>
+	<key>NSCalendarsWriteOnlyAccessUsageDescription</key>
+	<string>calendarctl needs calendar write access to create and update events.</string>
+	<!-- Empty for local/ad-hoc builds. Release builds fill this with the
+	     Developer ID Team ID that signs both the CLI and this helper. -->
+	<key>CalendarctlTrustedTeamID</key>
+	<string></string>
+	<key>CalendarctlTrustedCLIPaths</key>
+	<array/>
+</dict>
+</plist>

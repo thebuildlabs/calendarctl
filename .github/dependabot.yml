@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Actions are pinned to immutable commit SHAs; Dependabot refreshes them.
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+
+  # Go module updates (cobra, yaml.v3, golang.org/x/vuln tool, etc.).
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "deps"
