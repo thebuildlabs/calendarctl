@@ -104,6 +104,16 @@ brews:
     license: MIT
     test: |
       system "#{bin}/calendarctl", "version"
+    post_install: |
+      if OS.mac?
+        helper = "#{bin}/EventKitBridge"
+        unless system("codesign", "--verify", "--strict", helper, out: File::NULL, err: File::NULL)
+          # CI's codesign can leave the embedded Info.plist unbound; the
+          # installing Mac's codesign produces a valid ad-hoc signature.
+          system "codesign", "--force", "--sign", "-", "--identifier",
+                 "com.thebuildlabs.calendarctl.bridge", helper
+        end
+      end
     install: |
       bin.install "calendarctl"
       if OS.mac?

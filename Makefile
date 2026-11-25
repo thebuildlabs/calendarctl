@@ -79,7 +79,9 @@ $(PLIST_BUILD): $(PLIST) $(BUILD_DIR)/$(BINARY)
 
 $(APP_BUNDLE)/Contents/MacOS/$(BRIDGE): $(BUILD_DIR)/$(BRIDGE) $(PLIST_BUILD)
 	@mkdir -p $(APP_BUNDLE)/Contents/MacOS
-	cp $(BUILD_DIR)/$(BRIDGE) $@
+	@# Use a real copy, not APFS clonefile: a clone would let the bundle's
+	@# re-sign modify the standalone helper and invalidate its signature.
+	install -m 700 $(BUILD_DIR)/$(BRIDGE) $@
 	cp $(PLIST_BUILD) $(APP_BUNDLE)/Contents/Info.plist
 	@# Sign the inner binary before the bundle; --deep would re-seal the outer
 	@# bundle and invalidate the standalone helper's signature.
@@ -93,16 +95,8 @@ $(APP_BUNDLE)/Contents/MacOS/$(BRIDGE): $(BUILD_DIR)/$(BRIDGE) $(PLIST_BUILD)
 
 $(BUILD_DIR)/$(BRIDGE): $(SWIFT_SRC) $(PLIST_BUILD)
 	@mkdir -p $(BUILD_DIR)
-	@# Ad-hoc builds omit the embedded plist: on some macOS runners codesign
-	@# leaves that section unbound, making the helper fail strict validation.
-	@# The .app bundle carries its own Info.plist; Developer ID builds still
-	@# embed it so the standalone helper can pin the trusted Team ID.
-	@if [ -n "$(SIGN_IDENTITY)" ]; then \
-		$(SWIFTC) -O -parse-as-library $(SWIFT_SRC) -o $@ \
-			-Xlinker -sectcreate -Xlinker __INFO -Xlinker __info_plist -Xlinker $(PLIST_BUILD); \
-	else \
-		$(SWIFTC) -O -parse-as-library $(SWIFT_SRC) -o $@; \
-	fi
+	$(SWIFTC) -O -parse-as-library $(SWIFT_SRC) -o $@ \
+		-Xlinker -sectcreate -Xlinker __INFO -Xlinker __info_plist -Xlinker $(PLIST_BUILD)
 	@if [ "$$(uname -s)" = "Darwin" ]; then $(BRIDGE_SIGN) $@; fi
 	@chmod 700 $@
 	@echo "Built and signed $@"
