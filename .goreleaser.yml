@@ -38,9 +38,9 @@ builds:
     ldflags:
       - -s -w -X github.com/thebuildlabs/calendarctl/internal/cli.version={{ .Version }}{{ if .Env.TEAM_ID }} -X github.com/thebuildlabs/calendarctl/internal/bridge.expectedTeamID={{ .Env.TEAM_ID }}{{ end }}
 
-# The helper pins the caller's Developer ID Team ID, so release binaries must
-# be signed. `make bridge` (before hook) pins that same Team ID in the helper's
-# Info.plist when SIGN_IDENTITY is set.
+# The helper pins the caller's signing identity, so release binaries must be
+# signed. Without a Developer ID we fall back to ad-hoc signing with the same
+# stable identifier; `make bridge` pins the Team ID only when one is set.
 signs:
   - id: darwin-codesign
     ids:
@@ -50,7 +50,7 @@ signs:
     args:
       - --force
       - --sign
-      - "{{ .Env.SIGN_IDENTITY }}"
+      - "{{ if .Env.SIGN_IDENTITY }}{{ .Env.SIGN_IDENTITY }}{{ else }}-{{ end }}"
       - --identifier
       - com.thebuildlabs.calendarctl
       - --options
@@ -65,7 +65,7 @@ archives:
     files:
       - LICENSE
       - README.md
-      - src: bin/EventKitBridge
+      - src: bin/EventKitBridge.app/Contents/MacOS/EventKitBridge
         dst: EventKitBridge
       - src: bin/EventKitBridge.app
         dst: EventKitBridge.app
@@ -105,7 +105,8 @@ brews:
       bin.install "calendarctl"
       if OS.mac?
         bin.install "EventKitBridge"
-        bin.install "EventKitBridge.app"
+        prefix.install "EventKitBridge.app"
+        bin.install_symlink prefix/"EventKitBridge.app" => "EventKitBridge.app"
       end
 
 release:
