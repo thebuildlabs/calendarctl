@@ -18,6 +18,9 @@ builds:
     goarch:
       - amd64
       - arm64
+    hooks:
+      post:
+        - ./scripts/sign-cli.sh "{{ .Target }}" "{{ .Path }}"
     ldflags:
       - -s -w -X github.com/thebuildlabs/calendarctl/internal/cli.version={{ .Version }}{{ if .Env.TEAM_ID }} -X github.com/thebuildlabs/calendarctl/internal/bridge.expectedTeamID={{ .Env.TEAM_ID }}{{ end }}
 

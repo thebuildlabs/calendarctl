@@ -86,7 +86,6 @@ $(APP_BUNDLE)/Contents/MacOS/$(BRIDGE): $(BUILD_DIR)/$(BRIDGE) $(PLIST_BUILD)
 	@if [ "$$(uname -s)" = "Darwin" ]; then \
 		$(BRIDGE_SIGN) $@; \
 		$(BUNDLE_SIGN) $(APP_BUNDLE); \
-		$(BRIDGE_SIGN) $(BUILD_DIR)/$(BRIDGE); \
 	fi
 	@# Only the owning user may execute the TCC-enabled helper.
 	@chmod 700 $@
