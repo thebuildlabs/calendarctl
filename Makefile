@@ -93,11 +93,19 @@ $(APP_BUNDLE)/Contents/MacOS/$(BRIDGE): $(BUILD_DIR)/$(BRIDGE) $(PLIST_BUILD)
 
 $(BUILD_DIR)/$(BRIDGE): $(SWIFT_SRC) $(PLIST_BUILD)
 	@mkdir -p $(BUILD_DIR)
-	$(SWIFTC) -O -parse-as-library $(SWIFT_SRC) -o $@ \
-		-Xlinker -sectcreate -Xlinker __INFO -Xlinker __info_plist -Xlinker $(PLIST_BUILD)
+	@# Ad-hoc builds omit the embedded plist: on some macOS runners codesign
+	@# leaves that section unbound, making the helper fail strict validation.
+	@# The .app bundle carries its own Info.plist; Developer ID builds still
+	@# embed it so the standalone helper can pin the trusted Team ID.
+	@if [ -n "$(SIGN_IDENTITY)" ]; then \
+		$(SWIFTC) -O -parse-as-library $(SWIFT_SRC) -o $@ \
+			-Xlinker -sectcreate -Xlinker __INFO -Xlinker __info_plist -Xlinker $(PLIST_BUILD); \
+	else \
+		$(SWIFTC) -O -parse-as-library $(SWIFT_SRC) -o $@; \
+	fi
 	@if [ "$$(uname -s)" = "Darwin" ]; then $(BRIDGE_SIGN) $@; fi
 	@chmod 700 $@
-	@echo "Embedded calendar usage descriptions and signed $@"
+	@echo "Built and signed $@"
 
 ## verify-signing: fail unless release binaries carry the pinned Developer ID Team ID
 verify-signing: bridge
