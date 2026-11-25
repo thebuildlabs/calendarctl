@@ -110,8 +110,11 @@ brews:
         unless system("codesign", "--verify", "--strict", helper, out: File::NULL, err: File::NULL)
           # CI's codesign can leave the embedded Info.plist unbound; the
           # installing Mac's codesign produces a valid ad-hoc signature.
+          # Homebrew installs binaries 0555, so make it writable first.
+          FileUtils.chmod(0o755, helper)
           system "codesign", "--force", "--sign", "-", "--identifier",
                  "com.thebuildlabs.calendarctl.bridge", helper
+          FileUtils.chmod(0o555, helper)
         end
       end
     install: |
