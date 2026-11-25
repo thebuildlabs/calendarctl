@@ -68,7 +68,7 @@ archives:
     files:
       - LICENSE
       - README.md
-      - src: bin/EventKitBridge.app/Contents/MacOS/EventKitBridge
+      - src: bin/EventKitBridge
         dst: EventKitBridge
       - src: bin/EventKitBridge.app
         dst: EventKitBridge.app
